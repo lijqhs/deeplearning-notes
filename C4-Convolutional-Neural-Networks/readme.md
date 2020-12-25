@@ -15,6 +15,24 @@
       - [Pooling Layers](#pooling-layers)
       - [CNN Example](#cnn-example)
       - [Why Convolutions](#why-convolutions)
+  - [Week 2: Classic Networks](#week-2-classic-networks)
+    - [Learning Objectives](#learning-objectives-1)
+    - [Case Studies](#case-studies)
+      - [Why look at case studies](#why-look-at-case-studies)
+      - [Classic Networks](#classic-networks)
+        - [LeNet-5](#lenet-5)
+        - [AlexNet](#alexnet)
+        - [VGG-16](#vgg-16)
+      - [ResNets](#resnets)
+      - [Why ResNets](#why-resnets)
+      - [Networks in Networks and 1x1 Convolutions](#networks-in-networks-and-1x1-convolutions)
+      - [Inception Network Motivation](#inception-network-motivation)
+      - [Inception Network](#inception-network)
+    - [Practical advices for using ConvNets](#practical-advices-for-using-convnets)
+      - [Using Open-Source Implementation](#using-open-source-implementation)
+      - [Transfering Learning](#transfering-learning)
+      - [Data Augmentation](#data-augmentation)
+      - [State of Computer Vision](#state-of-computer-vision)
 
 ## Week 1: Foundations of Convolutional Neural Networks
 
@@ -213,4 +231,253 @@ There are two main advantages of convolutional layers over just using fully conn
 Through these two mechanisms, a neural network has a lot fewer parameters which allows it to be trained with smaller training cells and is less prone to be overfitting.
 
 - Convolutional structure helps the neural network encode the fact that an image shifted a few pixels should result in pretty similar features and should probably be assigned the same output label.
-- And the fact that you are applying the same filter in all the positions of the image, both in the early layers and in the late layers that helps a neural network automatically learn to be more robust or to better capture the desirable property of translation invariance. 
+- And the fact that you are applying the same filter in all the positions of the image, both in the early layers and in the late layers that helps a neural network automatically learn to be more robust or to better capture the desirable property of translation invariance.
+
+## Week 2: Classic Networks
+
+### Learning Objectives
+
+- Discuss multiple foundational papers written about convolutional neural networks
+- Analyze the dimensionality reduction of a volume in a very deep network
+- Implement the basic building blocks of ResNets in a deep neural network using Keras
+- Train a state-of-the-art neural network for image classification
+- Implement a skip connection in your network
+- Clone a repository from github and use transfer learning
+
+### Case Studies
+
+#### Why look at case studies
+
+It is helpful in taking someone else's neural network architecture and applying that to another problem.
+
+- Classic networks
+  - LeNet-5
+  - AlexNet
+  - VGG
+- ResNet
+- Inception
+
+#### Classic Networks
+
+##### LeNet-5
+
+![LeNet-5](img/lenet-5.png)
+
+Some difficult points about reading the [LeNet-5 paper](https://pdfs.semanticscholar.org/62d7/9ced441a6c78dfd161fb472c5769791192f6.pdf):
+
+- Back then, people used sigmoid and tanh nonlinearities, not relu.
+- To save on computation as well as some parameters, the original LeNet-5 had some crazy complicated way where different filters would look at different channels of the input block. And so the paper talks about those details, but the more modern implementation wouldn't have that type of complexity these days.
+- One last thing that was done back then I guess but isn't really done right now is that the original LeNet-5 had a non-linearity after pooling, and I think it actually uses sigmoid non-linearity after the pooling layer.
+- Andrew Ng recommend focusing on section two which talks about this architecture, and take a quick look at section three which has a bunch of experiments and results, which is pretty interesting. Later sections talked about the graph transformer network, which isn't widely used today.
+
+##### AlexNet
+
+![AlexNet](img/alexnet.png)
+
+- AlexNet has a lot of similarities to LeNet (60,000 parameters), but it is much bigger (60 million parameters).
+- The paper had a complicated way of training on two GPUs since GPU was still a little bit slower back then.
+- The original AlexNet architecture had another set of a layer called local response normalization, which isn't really used much.
+- Before AlexNet, deep learning was starting to gain traction in speech recognition and a few other areas, but it was really just paper that convinced a lot of the computer vision community to take a serious look at deep learning, to convince them that deep learning really works in computer vision.
+
+##### VGG-16
+
+![VGG-16](img/vgg-16.png)
+
+- Filters are always `3x3` with a stride of `1` and are always `same` convolutions.
+- VGG-16 has 16 layers that have weights. A total of about 138 million parameters. Pretty large even by modern standards.
+- It is the simplicity, or the uniformity, of the VGG-16 architecture made it quite appealing.
+  - There is a few conv-layers followed by a pooling layer which reduces the height and width by a factor of `2`.
+  - Doubling through every stack of conv-layers is a simple principle used to design the architecture of this network.
+- The main downside is that you have to train a large number of parameters.
+
+#### ResNets
+
+Paper: [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
+
+![resnet-network](img/resnet-network.png)
+
+- Deeper neural networks are more difficult to train. They present a residual learning framework to ease the training of networks that are substantially deeper than those used previously.
+- When deeper networks are able to start converging, a degradation problem has been exposed: with the network depth increasing, accuracy gets saturated (which might be unsurprising) and then degrades rapidly. The paper address the degradation problem by introducing a deep residual learning framework. Instead of hoping each few stacked layers directly fit a desired underlying mapping, they explicitly let these layers fit a residual mapping.
+- The paper authors show that: 1) Their extremely deep residual nets are easy to optimize, but the counterpart "plain" nets (that simply stack layers) exhibit higher training error when the depth increases; 2) Their deep residual nets can easily enjoy accuracy gains from greatly increased depth, producing results substantially better than previous networks.
+
+![resnet](img/resnet.png)
+
+Formally, denoting the desired underlying mapping as `H(x)`, they let the stacked nonlinear layers fit another mapping of `F(x):=H(x)-x`. The original mapping `H(x)` is recast into `F(x)+x`. If the added layers can be constructed as identity mappings, a deeper model should have training error no greater than its shallower counterpart.
+
+![resnet-block](img/resnet-block.png)
+
+#### Why ResNets
+
+- Doing well on the training set is usually a prerequisite to doing well on your hold up or on your depth or on your test sets. So, being able to at least train ResNet to do well on the training set is a good first step toward that.
+- But if you make a network deeper, it can hurt your ability to train the network to do well on the training set. It is not true or at least less true when training a ResNet.
+  - If we use `L2` regularization on `a[l+2]=g(Z[l+2]+a[l])=g(W[l+2]a[l+1]+b[l+2]+a[l])`, and if the value of `W[l+2],b[l+2]` shrink to zero, then `a[l+2]=g(a[l])=a[l]` since we use `relu` activation and `a[l]` is also non-negative. So we just get back `a[l]`. This shows that the identity function is easy for residual block to learn.
+  - It's easy to get `a[l+2]` equals to `a[l]` because of this skip connection. What this means is that adding these two layers in the neural network doesn't really hurt the neural network's ability to do as well as this simpler network without these two extra layers, because it's quite easy for it to learn the identity function to just copy `a[l]` to `a[l+2]` despite the addition of these two layers. 
+  - So adding two extra layers or adding this residual block to somewhere in the middle or the end of this big neural network doesn't hurt performance. It is easier to go from a decent baseline of not hurting performance and then gradient descent can only improve the solution from there.
+
+*About dimensions*:
+
+- In `a[l+2]=g(Z[l+2]+a[l])` we're assuming that `Z[l+2]` and `a[l]` have the same dimension. So what we see in ResNet is a lot of use of same convolutions.
+- In case the input and output have different dimensions, we can add an extra matrix `W_s` so that `a[l+2] = g(Z[l+2] + W_s * a[l])`. The matrix `W_s` could be a matrix of parameters we learned or could be a fixed matrix that just implements zero paddings.
+
+*An example from the paper*:
+
+A plain network in which you input an image and then have a number of `CONV` layers until eventually you have a softmax output at the end.
+
+![resnet-plain-34](img/resnet-plain-34.png)
+
+To turn this into a ResNet, you add those extra skip connections and there are a lot of `3x3` convolutions and most of these are `3x3` same convolutions and that's why you're adding equal dimension feature vectors. There are occasionally pooling layers and in these cases you need to make an adjustment to the dimension by the matrix `W_s`.
+
+![resnet-resnet-34](img/resnet-resnet-34.png)
+
+#### Networks in Networks and 1x1 Convolutions
+
+Paper: [Network in Network](https://arxiv.org/abs/1312.4400)
+
+- At first, a 1×1 convolution does not seem to make much sense. After all, a convolution correlates adjacent pixels. A 1×1 convolution obviously does not.
+- Because the minimum window is used, the 1×1 convolution loses the ability of larger convolutional layers to recognize patterns consisting of interactions among adjacent elements in the height and width dimensions. The only computation of the 1×1 convolution occurs on the channel dimension.
+- The 1×1 convolutional layer is typically used to *adjust the number of channels* between network layers and to control model complexity.
+
+![conv-1x1](img/conv-1x1.svg)
+
+*(image from [here][d2l_ai_conv_1by1])*
+
+The 1×1 convolutional layer is equivalent to *the fully-connected layer*, when applied on a per pixel basis.
+
+- You can take every pixel as an *example* with `n_c[l]` input values (channels) and the output layer has `n_c[l+1]` nodes. The kernel is just nothing but the weights.
+- Thus the 1x1 convolutional layer requires `n_c[l+1] x n_c[l]` weights and the bias.
+
+The 1x1 convolutional layer is actually doing something pretty non-trivial and adds non-linearity to your neural network and allow you to decrease or keep the same or if you want, increase the number of channels in your volumes.
+
+#### Inception Network Motivation
+
+Paper: [Going Deeper with Convolutions](https://arxiv.org/abs/1409.4842)
+
+When designing a layer for a ConvNet, you might have to pick, do you want a 1 by 3 filter, or 3 by 3, or 5 by 5, or do you want a pooling layer?
+What the inception network does is it says, why shouldn't do them all? And this makes the network architecture more complicated, but it also works remarkably well.
+
+![inception-motivation](img/inception-motivation.png)
+
+And the basic idea is that instead of you need to pick one of these filter sizes or pooling you want and commit to that, you can do them all and just concatenate all the outputs, and let the network learn whatever parameters it wants to use, whatever the combinations of these filter sizes it wants. Now it turns out that there is a problem with the inception layer as we've described it here, which is *computational cost*.
+
+*The analysis of computational cost*:
+
+![inception-computational-cost](img/inception-computation.png)
+
+*Inception modules*:
+
+![inception](img/inception.png)
+
+#### Inception Network
+
+![inception-module](img/inception-module.png)
+
+- In order to really concatenate all of these outputs at the end we are going to use the same type of padding for pooling.
+- What the inception network does is more or less put a lot of these modules together.
+
+![inception-network](img/inception-network.png)
+
+The last few layers of the network is a fully connected layer followed by a softmax layer to try to make a prediction. What these side branches do is it takes some hidden layer and it tries to use that to make a prediction. You should think of this as maybe just another detail of the inception that's worked. But what is does is it helps to ensure that the features computed even in the heading units, even at intermediate layers that they're not too bad for protecting the output cause of a image. And this appears to have a regularizing effect on the inception network and helps prevent this network from overfitting.
+
+### Practical advices for using ConvNets
+
+#### Using Open-Source Implementation
+
+- Starting with open-source implementations is a better way, or certainly a faster way to get started on a new project.
+- One of the advantages of doing so also is that sometimes these networks take a long time to train, and someone else might have used multiple GPUs and
+a very large dataset to pretrain some of these networks. And that allows you to do transfer learning using these networks.
+
+#### Transfering Learning
+
+The computer vision research community has been pretty good at posting lots of data sets on the Internet so if you hear of things like ImageNet, or MS COCO, or PASCAL types of data sets, these are the names of different data sets that people have post online and a lot of computer researchers have trained their algorithms on.
+- [ImageNet][imagenet]: ImageNet is an image database organized according to the WordNet hierarchy (currently only the nouns), in which each node of the hierarchy is depicted by hundreds and thousands of images.
+- [Microsoft COCO][mscoco]: COCO is a common object in context. The dataset contains 91 objects types of 2.5 million labeled instances across 328,000 images.
+- [PASCAL][pascal]: PASCAL-Context Dataset This dataset is a set of additional annotations for PASCAL VOC 2010. It goes beyond the original PASCAL semantic segmentation task by providing annotations for the whole scene. The statistics section has a full list of 400+ labels.
+
+Sometimes these training takes several weeks and might take many GPUs and the fact that someone else has done this and gone through the painful high-performance search process, means that you can often download open source ways that took someone else many weeks or months to figure out and use that as a very good initialization for your own neural network.
+
+- If you have a small dataset for your image classification problem, you can download some open source implementation of a neural network and download not just the code but also the weights. And then you get rid of the softmax layer and create your own softmax unit that outputs your classification labels.
+- To do this, you just freeze the parameters which you don't want to train. A lot of popular learning frameworks support this mode of operation (i.e., set *trainable* parameter to 0).
+- Those early frozen layers are some fixed function that doesn't change. So one trick that could speedup training is that we just pre-compute that layer's activations and save them to disk. The advantage of the save-to-disk or the pre-compute method is that you don't need to recompute those activations everytime you take an epoch or take a path through a training set.
+- If you have a larger label dataset one thing you could do is then freeze fewer layers. If you have a lot of data, in the extreme case, you could just use the downloaded weights as initialization so they would replace random initialization.
+
+#### Data Augmentation
+
+Having more data will help all computer vision tasks. 
+
+*Some common data augmentation in computer vision*:
+
+- Mirroring
+- Random cropping
+- Rotation
+- Shearing
+- Local warping
+
+*Color shifting*: Take different values of R, G and B and use them to *distort the color channels*. In practice, the values R, G and B are drawn from some probability distribution. This makes your learning algorithm more robust to changes in the colors of your images.
+
+- One of the ways to implement color distortion uses an algorithm called PCA. The details of this are actually given in the AlexNet paper, and sometimes called PCA Color Augmentation.
+  - If your image is mainly purple, if it mainly has red and blue tints, and very little green, then PCA Color Augmentation, will add and subtract a lot to red and blue, where it balance [inaudible] all the greens, so kind of keeps the overall color of the tint the same. 
+
+*Implementation tips*:
+
+A pretty common way of implementing data augmentation is to really have one thread, almost four threads, that is responsible for loading the data and implementing distortions, and then passing that to some other thread or some other process that then does the training.
+
+- Often the data augmentation and training process can run in parallel.
+- Similar to other parts of training a deep neural network, the data augmentation process also has a few hyperparameters, such as how much color shifting do you implement and what parameters you use for random cropping.
+
+![data-augmentation-implementation](img/data-augmentation.png)
+
+#### State of Computer Vision
+
+- Image recognition: the problem of looking at a picture and telling you is this a cat or not.
+- Object detection: look in the picture and actually you're putting the bounding boxes are telling you where in the picture the objects, such as the car as well. The cost of getting the bounding boxes is more expensive to label the objects.
+
+*Data vs. hand-engineering*:
+
+- Having a lot of data: simpler algorithms as well as less hand-engineering. So less needing to carefully design features for the problem, but instead you can have a giant neural network, even a simpler architecture.
+- Don't have much data: more hand-engineering ("hacks")
+
+*Two sources of knowledge*:
+
+- Labeled data, (x,y)
+- Hand-engineering: features / network architecture / other components
+
+![data vs. hand-engineering](img/data-hand-engineering.png)
+
+Even though data sets are getting bigger and bigger, often we just don't have as much data as we need. And this is why the computer vision historically and even today has relied more on hand-engineering. And this is also why that the field of computer vision has developed rather complex network architectures, is because in the absence of more data. The way to get good performance is to spend more time architecting, or fooling around with the network architecture.
+
+- Hand-engineering is very difficult and skillful task that requires a lot of insight. Historically the field of the computer vision has used very small datasets and the computer vision literature has relied on a lot of hand-engineering.
+- In the last few years the amount of data with the computer vision task has increased so dramatically that the amount of hand-engineering has a significant reduction.
+- But there's still a lot of hand-engineering of network architectures and computer vision, which is why you see very complicated hyperparameters choices in computer vision.
+- The algorithms of object detection become even more complex and has even more specialized components.
+- One thing that helps a lot when you have little data is *transfer learning*.
+
+**Tips for doing well on benchmarks/winning competitions**:
+
+- (1) Ensembling
+  - Train several networks independently and average their outputs (not weights).
+  - That maybe gives you 1% or 2% better, which really helps win a competition.
+  - To test on each image you might need to run an image through 3 to 15 different networks, so ensembling slows down your running time by a factor of 3 to 15.
+  - So ensembling is one of those tips that people use doing well in benchmarks and for winning competitions.
+  - Almost never use in production to serve actual customers.
+  - One big problem: need to keep all these different networks around, which takes up a lot more computer memory.
+- (2) Multi-crop at test time
+  - Run classifier on multiple versions of test images and average results.
+  - Used much more for doing well on benchmarks than in actual production systems.
+  - Keep just one network around, which doesn't suck up as much memory, but it still slows down your run time quite a bit.
+
+![multi-crop](img/multi-crop.png)
+
+Use open source code
+
+- Use architectures of networks published in the literature
+- Use open source implementations if possible
+- Use pretrained models and fine-tune on your dataset
+
+[d2l_ai_conv_1by1]: https://d2l.ai/chapter_convolutional-neural-networks/channels.html#times-1-convolutional-layer
+[imagenet]: http://image-net.org/
+[mscoco]: https://www.microsoft.com/en-us/research/publication/microsoft-coco-common-objects-in-context/
+[pascal]: https://www.cs.stanford.edu/~roozbeh/pascal-context/
+
+
+---
+Notes by [Aaron Lee](mailto:lijqhs@gmail.com) © 2020

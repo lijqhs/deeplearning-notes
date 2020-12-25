@@ -22,7 +22,15 @@ Introduction from the specialization page:
   - [Week 2: ML Strategy (2)](C3-Structuring-Machine-Learning-Projects/readme.md#week-2-ml-strategy-2)
 - [Course 4: Convolutional Neural Networks](C4-Convolutional-Neural-Networks/readme.md)
   - [Week 1: Foundations of Convolutional Neural Networks](C4-Convolutional-Neural-Networks/readme.md#week-1-foundations-of-convolutional-neural-networks)
-  - Week 2
+  - [Week 2: Classic Networks](C4-Convolutional-Neural-Networks/readme.md#week-2-classic-networks)
   - Week 3
   - Week 4
 - Course 5: Sequence Models
+
+Some hand-drawn flowcharts by Andrew Ng are very important for the understanding of the algorithm process, so I reorganized them for easy viewing, such as:
+
+![cnn-example](C4-Convolutional-Neural-Networks/img/nn-example.png)
+
+For some of the more difficult concepts to understand, I've added some reference links. And I use a lot of tables to sort out concepts, which I think makes it easier to look up and compare.
+
+Besides, math formulas are very important for learning, and using Latex can make them more clearly presented, but since GitHub markdown does not support direct display of math formulas, I have converted most of them to svg images using the [online formula editor](https://latex.codecogs.com/eqneditor/editor.php).
