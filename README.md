@@ -1,6 +1,6 @@
 # Deep Learning Specialization Course Notes
 
-This is the notes I took while studying the [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) course offered by [deeplearning.ai](https://www.deeplearning.ai/) on Coursera, mainly to track my learning progress and consolidate my understanding of the course, but also to organize the knowledge points and make it easy to check them at any time.
+This is the notes I took while studying the [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) course offered by [deeplearning.ai](https://www.deeplearning.ai/) on Coursera.
 
 Introduction from the specialization page:
 
@@ -23,14 +23,10 @@ Introduction from the specialization page:
 - [Course 4: Convolutional Neural Networks](C4-Convolutional-Neural-Networks/readme.md)
   - [Week 1: Foundations of Convolutional Neural Networks](C4-Convolutional-Neural-Networks/readme.md#week-1-foundations-of-convolutional-neural-networks)
   - [Week 2: Classic Networks](C4-Convolutional-Neural-Networks/readme.md#week-2-classic-networks)
+  - [Week 3: Object detection](C4-Convolutional-Neural-Networks/readme.md#week-3-object-detection)
+  - [Week 4: Special applications: Face recognition & Neural style transfer](C4-Convolutional-Neural-Networks/readme.md#week-4-special-applications-face-recognition--neural-style-transfer)
+- [Course 5: Sequence Models](C5-Sequence-Models/readme.md)
+  - [Week 1: Recurrent Neural Networks](C5-Sequence-Models/readme.md#week-1-recurrent-neural-networks)
+  - Week 2
   - Week 3
-  - Week 4
-- Course 5: Sequence Models
 
-Some hand-drawn flowcharts by Andrew Ng are very important for the understanding of the algorithm process, so I reorganized them for easy viewing, such as:
-
-![cnn-example](C4-Convolutional-Neural-Networks/img/nn-example.png)
-
-For some of the more difficult concepts to understand, I've added some reference links. And I use a lot of tables to sort out concepts, which I think makes it easier to look up and compare.
-
-Besides, math formulas are very important for learning, and using Latex can make them more clearly presented, but since GitHub markdown does not support direct display of math formulas, I have converted most of them to svg images using the [online formula editor](https://latex.codecogs.com/eqneditor/editor.php).

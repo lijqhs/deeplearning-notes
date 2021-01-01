@@ -647,4 +647,4 @@ print(session.run(w))
 [adam]: https://arxiv.org/abs/1412.6980
 
 ---
-Notes by [Aaron Lee](mailto:lijqhs@gmail.com) © 2020
+Notes by [Aaron](mailto:lijqhs@gmail.com) © 2020

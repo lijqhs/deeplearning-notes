@@ -33,6 +33,35 @@
       - [Transfering Learning](#transfering-learning)
       - [Data Augmentation](#data-augmentation)
       - [State of Computer Vision](#state-of-computer-vision)
+      - [Tips for Keras](#tips-for-keras)
+  - [Week 3: Object detection](#week-3-object-detection)
+    - [Learning Objectives](#learning-objectives-2)
+    - [Detection algorithms](#detection-algorithms)
+      - [Object Localization](#object-localization)
+      - [Landmark Detection](#landmark-detection)
+      - [Object Detection](#object-detection)
+      - [Convolutional Implementation of Sliding Windows](#convolutional-implementation-of-sliding-windows)
+      - [Bounding Box Predictions (YOLO)](#bounding-box-predictions-yolo)
+      - [Intersection Over Union](#intersection-over-union)
+      - [Non-max Suppression](#non-max-suppression)
+      - [Anchor Boxes](#anchor-boxes)
+      - [YOLO Algorithm](#yolo-algorithm)
+      - [(Optional) Region Proposals](#optional-region-proposals)
+  - [Week 4: Special applications: Face recognition & Neural style transfer](#week-4-special-applications-face-recognition--neural-style-transfer)
+    - [Face Recognition](#face-recognition)
+      - [What is face recognition](#what-is-face-recognition)
+      - [One Shot Learning](#one-shot-learning)
+      - [Siamese network](#siamese-network)
+      - [Triplet Loss](#triplet-loss)
+      - [Face Verification and Binary Classification](#face-verification-and-binary-classification)
+      - [Summary of Face Recognition](#summary-of-face-recognition)
+    - [Neural Style Transfer](#neural-style-transfer)
+      - [What is neural style transfer](#what-is-neural-style-transfer)
+      - [What are deep ConvNets learning](#what-are-deep-convnets-learning)
+      - [Cost Function](#cost-function)
+      - [Content Cost Function](#content-cost-function)
+      - [Style Cost Function](#style-cost-function)
+      - [1D and 3D Generalizations](#1d-and-3d-generalizations)
 
 ## Week 1: Foundations of Convolutional Neural Networks
 
@@ -329,6 +358,13 @@ To turn this into a ResNet, you add those extra skip connections and there are a
 
 ![resnet-resnet-34](img/resnet-resnet-34.png)
 
+**Practice advices on ResNet**:
+
+- Very deep "plain" networks don't work in practice because they are hard to train due to vanishing gradients.  
+- The skip-connections help to address the Vanishing Gradient problem. They also make it easy for a ResNet block to learn an identity function. 
+- There are two main types of blocks: The identity block and the convolutional block. 
+- Very deep Residual Networks are built by stacking these blocks together.
+
 #### Networks in Networks and 1x1 Convolutions
 
 Paper: [Network in Network](https://arxiv.org/abs/1312.4400)
@@ -467,17 +503,311 @@ Even though data sets are getting bigger and bigger, often we just don't have as
 
 ![multi-crop](img/multi-crop.png)
 
-Use open source code
+*Use open source code*:
 
 - Use architectures of networks published in the literature
 - Use open source implementations if possible
 - Use pretrained models and fine-tune on your dataset
 
+#### Tips for Keras
+
+- Keras is a tool for rapid prototyping which allows you to quickly try out different model architectures. Only four steps to build a model using Keras:
+  - *Create*: define your model architecture, using functions such as `Input()`, `ZeroPadding2D()`, `Conv2D()`, `BatchNormalization()`, `MaxPooling2D()`, ... These python objects would be used as functions. [Know more about "Objects as functions"][python-pandemonium].
+  - *Compile*: `model.compile(optimizer = "...", loss = "...", metrics = ["accuracy"])`. Optimizers include 'adam', 'sgd' or others. The loss function can be 'binary_crossentropy' or 'categorical_crossentropy' or others. See [Keras API Doc](https://keras.io/api/).
+  - *Fit/Train*: train the model by `model.fit(x = ..., y = ..., epochs = ..., batch_size = ...)`.
+  - *Evaluate/Test*: test the model by `model.evaluate(x = ..., y = ...)`.
+- Model visualization tools:
+  - *Summarize model*: `model.summary()` prints the details of your layers in a table with the sizes of its inputs/outputs
+  - *Visualize model*: `plot_model()` plots your graph in a nice layout.
+
+For a full guidance read the newest tutorial on the Keras documentation: 
+- [Introduction to Keras for Engineers](https://keras.io/getting_started/intro_to_keras_for_engineers/)
+- [Introduction to Keras for Researchers](https://keras.io/getting_started/intro_to_keras_for_researchers/)
+
+Implementations of VGG16, ResNet and Inception by Keras can be found in [Francois Chollet's GitHub repository](https://github.com/fchollet/deep-learning-models).
+  
 [d2l_ai_conv_1by1]: https://d2l.ai/chapter_convolutional-neural-networks/channels.html#times-1-convolutional-layer
 [imagenet]: http://image-net.org/
 [mscoco]: https://www.microsoft.com/en-us/research/publication/microsoft-coco-common-objects-in-context/
 [pascal]: https://www.cs.stanford.edu/~roozbeh/pascal-context/
+[python-pandemonium]: https://medium.com/python-pandemonium/function-as-objects-in-python-d5215e6d1b0d
 
+## Week 3: Object detection
+
+### Learning Objectives
+
+- Describe the challenges of Object Localization, Object Detection and Landmark Finding
+- Implement non-max suppression to increase accuracy
+- Implement intersection over union
+- Label a dataset for an object detection application
+- Identify the components used for object detection (landmark, anchor, bounding box, grid, ...) and their purpose
+
+### Detection algorithms
+
+#### Object Localization
+
+![object-classification-detection](img/object-clf-detect.png)
+
+- The classification and the classification of localization problems usually have one object.
+- In the detection problem there can be multiple objects.
+- The ideas you learn about image classification will be useful for classification with localization, and the ideas you learn for localization will be useful for detection.
+
+![object-classification-localization](img/object-clf-local.png)
+
+Giving the bounding box then you can use supervised learning to make your algorithm outputs not just a class label but also the four parameters to tell you where is the bounding box of the object you detected.
+
+![object-classification-localization-y](img/object-clf-local-y.png)
+
+The squared error is used just to simplify the description here. In practice you could probably use a log like feature loss for the `c1, c2, c3` to the softmax output.
+
+#### Landmark Detection
+
+In more general cases, you can have a neural network just output x and y coordinates of important points in image, sometimes called landmarks.
+
+![landmark-detection](img/object-landmark.png)
+
+If you are interested in people pose detection, you could also define a few key positions like the midpoint of the chest, the left shoulder, left elbow, the wrist, and so on.
+
+The identity of landmark one must be consistent across different images like maybe landmark one is always this corner of the eye, landmark two is always this corner of the eye, landmark three, landmark four, and so on.
+
+#### Object Detection
+
+![sliding windows detection](img/object-slide-window.png)
+
+Disadvantage of sliding windows detection is computational cost. Unless you use a very fine granularity or a very small stride, you end up not able to localize the objects accurately within the image.
+
+#### Convolutional Implementation of Sliding Windows
+
+To build up towards the convolutional implementation of sliding windows let's first see how you can turn fully connected layers in neural network into convolutional layers.
+
+![Turn FC into CONV layers](img/object-sliding-conv.png)
+
+What the convolutional implementation of sliding windows does is it allows *four* processes in the convnet to share a lot of computation. Instead of doing it sequentially, with the convolutional implementation you can implement the entire image, all maybe 28 by 28 and convolutionally make all the predictions at the same time.
+
+![convolutional implementation of sliding windows](img/object-sliding-conv2.png)
+
+#### Bounding Box Predictions (YOLO)
+
+The convolutional implementation of sliding windows is more computationally efficient, but it still has a problem of not quite outputting the most accurate bounding boxes. The perfect bounding box isn't even quite square, it's actually has a slightly wider rectangle or slightly horizontal aspect ratio.
+
+![YOLO](img/object-yolo-alg.png)
+
+**YOLO algorithm**:
+
+The basic idea is you're going to take the image classification and localization algorithm and apply that to each of the nine grid cells of the image. If the center/midpoint of an object falls into a grid cell, that grid cell is responsible for detecting that object.
+
+The advantage of this algorithm is that the neural network outputs precise bounding boxes as follows.
+
+- First, this allows in your network to output bounding boxes of any aspect ratio, as well as, output much more precise coordinates than are just dictated by the stride size of your sliding windows classifier.
+- Second, this is a convolutional implementation and you're not implementing this algorithm nine times on the 3 by 3 grid or 361 times on 19 by 19 grid.
+
+#### Intersection Over Union
+
+`IoU` is a measure of the overlap between two bounding boxes. If we use `IoU` in the output assessment step, then the higher the `IoU` the more accurate the bounding box. However `IoU` is a nice tool for the YOLO algorithm to discard redundant bounding boxes.
+
+![IoU](img/object-iou.png)
+
+#### Non-max Suppression
+
+One of the problems of Object Detection as you've learned about this so far, is that your algorithm may find multiple detections of the same objects. Rather than detecting an object just once, it might detect it multiple times. Non-max suppression is a way for you to make sure that your algorithm detects each object only once.
+
+- It first takes the largest `Pc` with the probability of a detection.
+- Then, the non-max suppression part is to get rid of any other ones with a high (defined by a threshold) `IoU` between the box chosen in the first step.
+
+![Non-max](img/object-nonmax.png)
+
+If you actually tried to detect three objects say pedestrians, cars, and motorcycles, then the output vector will have three additional components. And it turns out, the right thing to do is to independently carry out non-max suppression three times, one on each of the outputs classes.
+
+#### Anchor Boxes
+
+One of the problems with object detection as you have seen it so far is that each of the grid cells can detect only one object. What if a grid cell wants to detect multiple objects? This is what the idea of anchor boxes does.
+
+*Anchor box algorithm*:
+
+| previous box | with two anchor boxes |
+| :---- | :---- |
+| Each object in training image is assigned to grid cell that contains that object’s midpoint. | Each object in training image is assigned to grid cell that contains object’s midpoint and anchor box for the grid cell with highest `IoU`. |
+| Output `y`: `3x3x8` | Output `y`: `3x3x16` or `3x3x2x8` |
+
+![anchor box](img/object-anchorbox.png)
+
+#### YOLO Algorithm
+
+*YOLO algorithm steps*:
+
+- If you're using two anchor boxes, then for each of the nine grid cells, you get two predicted bounding boxes.
+- Next, you then get rid of the low probability predictions.
+- And then finally if you have three classes you're trying to detect, you're trying to detect pedestrians, cars and motorcycles. What you do is, for each of the three classes, independently run non-max suppression for the objects that were predicted to come from that class.
+
+![yolo-algorithm](img/object-yolo-algorithm.png)
+
+#### (Optional) Region Proposals
+
+| algorithm | description |
+| :----: | :---- |
+| R-CNN | Propose regions. Classify proposed regions one at a time. Output label + bounding box. The way that they perform the region proposals is to run an algorithm called a segmentation algorithm. One downside of the R-CNN algorithm was that it is actually quite slow. |
+| Fast R-CNN | Propose regions. Use convolution implementation of sliding windows to classify all the proposed regions. One of the problems of fast R-CNN algorithm is that the clustering step to propose the regions is still quite slow. |
+| Faster R-CNN | Use convolutional network to propose regions. (Most implementations are usually still quit a bit slower than the YOLO algorithm.) |
+
+## Week 4: Special applications: Face recognition & Neural style transfer
+
+Discover how CNNs can be applied to multiple fields, including art generation and face recognition. Implement your own algorithm to generate art and recognize faces.
+
+### Face Recognition
+
+#### What is face recognition
+
+- Verification
+  - Input image, name/ID
+  - Output whether the input image is that of the claimed person
+- Recognition
+  - Has a database of K persons
+  - Get an input image
+  - Output ID if the image is any of the K persons (or “not recognized”)
+
+#### One Shot Learning
+
+One-shot learning problem: to recognize a person given just one single image.
+
+- So one approach is to input the image of the person, feed it too a ConvNet. And have it output a label, y, using a softmax unit with four outputs or maybe five outputs corresponding to each of these four persons or none of the above. However, this doesn't work well.
+- Instead, to make this work, what you're going to do instead is learn a **similarity function** `d(img1,img2) = degree of difference between images`. So long as you can learn this function, which inputs a pair of images and tells you, basically, if they're the same person or different persons. Then if you have someone new join your team, you can add a fifth person to your database, and it just works fine.
+
+#### Siamese network
+
+A good way to implement a *similarity function* `d(img1, img2)` is to use a [Siamese network](https://www.paperswithcode.com/method/siamese-network).
+
+![siamese-network](img/siamese-network.png)
+
+In a Siamese network, instead of making a classification by a softmax unit, we focus on the vector computed by a fully connected layer as an encoding of the input image `x1`.
+
+*Goal of learning*:
+
+- Parameters of NN define an encoding `𝑓(𝑥_𝑖)`
+- Learn parameters so that: 
+  - If `𝑥_𝑖,𝑥_𝑗` are the same person, `‖f(𝑥_𝑖)−f(𝑥_𝑗)‖^2` is small.
+  - If `𝑥_𝑖,𝑥_𝑗` are different persons, `‖f(𝑥_𝑖)−f(𝑥_𝑗)‖^2` is large. 
+
+#### Triplet Loss
+
+One way to learn the parameters of the neural network so that it gives you a good encoding for your pictures of faces is to define an applied gradient descent on the triplet loss function.
+
+In the terminology of the triplet loss, what you're going do is always look at one anchor image and then you want to distance between the anchor and the positive image, really a positive example, meaning as the same person to be similar. Whereas, you want the anchor when pairs are compared to the negative example for their distances to be much further apart. You'll always be looking at three images at a time:
+
+- an anchor image (A)
+- a positive image (P)
+- a negative image (N)
+
+As before we have `d(A,P)=‖f(A)−f(P)‖^2` and `d(A,N)=‖f(A)−f(N)‖^2`, the learning objective is to have `d(A,P) ≤ d(A,N)`. But if `f` always equals zero or `f` always outputs the same, i.e., the encoding for every image is identical, the objective is easily achieved, which is not what we want. So we need to add an `𝛼` to the left, a margin, which is a terminology you can see on support vector machines. 
+
+*The learning objective*:
+
+`d(A,P) + 𝛼 ≤ d(A,N)` or `d(A,P) - d(A,N) + 𝛼 ≤ 0`
+
+*Loss function*:
+
+```
+Given 3 images A,P,N:
+L(A,P,N) = max(d(A,P) - d(A,N) + 𝛼, 0)
+J = sum(L(A[i],P[i],N[i]))
+```
+
+You do need a dataset where you have multiple pictures of the same person. If you had just one picture of each person, then you can't actually train this system.
+
+- During training, if A,P,N are chosen randomly, `𝑑(𝐴,𝑃) + 𝛼 ≤ 𝑑(𝐴,𝑁)` is easily satisfied.
+- Choose triplets that're "hard" to train on.
+
+#### Face Verification and Binary Classification
+
+The Triplet loss is a good way to learn the parameters of a ConvNet for face recognition. Face recognition can also be posed as a straight binary classification problem by taking a pair of neural networks to take a Siamese Network and having them both compute the embeddings, maybe 128 dimensional embeddings or even higher dimensional, and then having the embeddings be input to a logistic regression unit to make a prediction. The output will be one if both of them are the same person and zero if different.
+
+![face-recognition](img/face-recognition.png)
+
+*Implementation tips*:
+
+Instead of having to compute the encoding every single time you can pre-compute that, which can save a significant computation.
+
+#### Summary of Face Recognition
+
+*Key points to remember*:
+
+- Face verification solves an easier 1:1 matching problem; face recognition addresses a harder 1:K matching problem. 
+- The triplet loss is an effective loss function for training a neural network to learn an encoding of a face image.
+- The same encoding can be used for verification and recognition. Measuring distances between two images' encodings allows you to determine whether they are pictures of the same person. 
+
+*More references*:
+
+- Florian Schroff, Dmitry Kalenichenko, James Philbin (2015). [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://arxiv.org/pdf/1503.03832.pdf)
+- Yaniv Taigman, Ming Yang, Marc'Aurelio Ranzato, Lior Wolf (2014). [DeepFace: Closing the gap to human-level performance in face verification](https://research.fb.com/wp-content/uploads/2016/11/deepface-closing-the-gap-to-human-level-performance-in-face-verification.pdf) 
+- The pretrained model we use is inspired by Victor Sy Wang's implementation and was loaded using his code: https://github.com/iwantooxxoox/Keras-OpenFace.
+- Our implementation also took a lot of inspiration from the official FaceNet github repository: https://github.com/davidsandberg/facenet 
+
+### Neural Style Transfer
+
+#### What is neural style transfer
+
+Paper: [A Neural Algorithm of Artistic Style](https://arxiv.org/abs/1508.06576)
+
+![neural style transfer](img/neural-style-transfer.png)
+
+In order to implement Neural Style Transfer, you need to look at the features extracted by ConvNet at various layers, the shallow and the deeper layers of a ConvNet.
+
+#### What are deep ConvNets learning
+
+Paper: [Visualizing and Understanding Convolutional Networks](https://arxiv.org/abs/1311.2901)
+
+![visualizing network](img/visualizing-nn.png)
+
+#### Cost Function
+
+*Neural style transfer cost function*:
+
+```
+J(G) = alpha * J_content(C, G) + beta * J_style(S, G)
+```
+
+*Find the generated image G*:
+
+1. Initiate G randomly, `G: 100 x 100 x 3`
+2. Use gradient descent to minimize `J(G)`
+
+#### Content Cost Function
+
+- Say you use hidden layer 𝑙 to compute content cost. (Usually, choose some layer in the middle, neither too shallow nor too deep)
+- Use pre-trained ConvNet. (E.g., VGG network)
+- Let `𝑎[𝑙](𝐶)` and `𝑎[𝑙](𝐺)` be the activation of layer 𝑙 on the images   
+- If `𝑎[𝑙](𝐶)` and `𝑎[𝑙](𝐺)` are similar, both images have similar content
+
+```
+J_content(C, G) = 1/2 * ‖𝑎[𝑙](𝐶)−𝑎[𝑙](𝐺)‖^2
+```
+
+#### Style Cost Function
+
+Style is defined as correlation between activations across channels.
+
+![style-cost1](img/style-cost1.png)
+
+![style-cost2](img/style-cost2.png)
+
+![style-cost3](img/style-cost3.png)
+
+#### 1D and 3D Generalizations
+
+ConvNets can apply not just to 2D images but also to 1D data as well as to 3D data.
+
+For 1D data, like ECG signal (electrocardiogram), it's a time series showing the voltage at each instant time. Maybe we have a 14 dimensional input. With 1D data applications, we actually use a recurrent neural network.
+
+```
+14 x 1 * 5 x 1 --> 10 x 16 (16 filters)
+```
+
+For 3D data, we can think the data has some height, some width, and then also some depth. For example, we want to apply a ConvNet to detect features in a 3D CT scan, for simplifying purpose, we have 14 x 14 x 14 input here. 
+
+```
+14 x 14 x 14 x 1 * 5 x 5 x 5 x 1 --> 10 x 10 x 10 x 16 (16 filters)
+```
+
+Other 3D data can be movie data where the different slices could be different slices in time through a movie. We could use ConvNets to detect motion or people taking actions in movies.
 
 ---
-Notes by [Aaron Lee](mailto:lijqhs@gmail.com) © 2020
+Notes by [Aaron](mailto:lijqhs@gmail.com) © 2020
