@@ -1,6 +1,6 @@
 # Deep Learning Specialization Course Notes
 
-This is the notes I took while studying the [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) course offered by [deeplearning.ai](https://www.deeplearning.ai/) on Coursera.
+This is the notes of the [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) courses offered by [deeplearning.ai](https://www.deeplearning.ai/) on Coursera.
 
 Introduction from the specialization page:
 
@@ -30,3 +30,7 @@ Introduction from the specialization page:
   - Week 2
   - Week 3
 
+
+
+[fancy-course-summary]: https://www.slideshare.net/TessFerrandez/notes-from-coursera-deep-learning-courses-by-andrew-ng
+[math-html]: https://www.toptal.com/designers/htmlarrows/letters/
