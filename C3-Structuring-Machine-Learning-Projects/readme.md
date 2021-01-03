@@ -372,4 +372,4 @@ Before applying end-to-end deep learning, you need to ask yourself the following
 - *Excludes potentially useful hand-designed component*. Data and any hand-design’s components or features are the 2 main sources of knowledge for a learning algorithm. If the data set is small than a hand-design system is a way to give manual knowledge into the algorithm.
 
 ---
-Notes by [Aaron](mailto:lijqhs@gmail.com) © 2020
+Notes by [lijqhs](mailto:azurciel@outlook.com) © 2020

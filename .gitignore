@@ -3,6 +3,7 @@ jupyter/
 *.pptx
 *.ppt
 .DS_Store
+*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

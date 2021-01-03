@@ -810,4 +810,4 @@ For 3D data, we can think the data has some height, some width, and then also so
 Other 3D data can be movie data where the different slices could be different slices in time through a movie. We could use ConvNets to detect motion or people taking actions in movies.
 
 ---
-Notes by [Aaron](mailto:lijqhs@gmail.com) © 2020
+Notes by [lijqhs](mailto:azurciel@outlook.com) © 2020

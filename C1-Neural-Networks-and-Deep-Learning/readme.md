@@ -649,4 +649,4 @@ About this topic, I think the following Andrew's explanation is the best summary
 [random-initialization]: https://stackoverflow.com/questions/20027598/why-should-weights-of-neural-networks-be-initialized-to-random-numbers
 
 ---
-Notes by [Aaron](mailto:lijqhs@gmail.com) © 2020
+Notes by [lijqhs](mailto:azurciel@outlook.com) © 2020
