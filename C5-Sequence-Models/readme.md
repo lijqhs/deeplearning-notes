@@ -842,5 +842,5 @@ The English translation:
   - One other thing you could do, that it's little bit of a hack, but could make the model a little bit easier to train, is instead of setting only a single time step to operate one, you could actually make it to operate a few ones for several times.
 
 ---
-Notes by [lijqhs](mailto:azurciel@outlook.com) © 2020
+Notes by Aaron © 2020
 
