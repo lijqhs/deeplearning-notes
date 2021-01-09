@@ -711,10 +711,9 @@ In the example of the French sentence, `"Jane, visite l'Afrique en Septembre"`.
 
 Paper: [BLEU: a Method for Automatic Evaluation of Machine Translation](https://www.aclweb.org/anthology/P02-1040.pdf) by Kishore Papineni, Salim Roukos, Todd Ward, and Wei-Jing Zhu.
 
-BLEU, by the way, stands for bilingual evaluation understudy.
+BLEU stands for **bilingual evaluation understudy**.
 
-The reason the BLEU score was revolutionary for machine translation was because this gave a pretty good, by no means perfect, but pretty good single real number evaluation metric and so that accelerated the progress of the entire field of machine translation.
-
+- The reason the BLEU score was revolutionary for machine translation was because this gave a pretty good, by no means perfect, but pretty good single real number evaluation metric and so that accelerated the progress of the entire field of machine translation.
 - The intuition behind the BLEU score is we're going to look at the machine generated output and see if the types of words it generates appear in at least one of the human generated references. And so these human generated references would be provided as part of the dev set or as part of the test set.
   - One way to measure how good the machine translation output is to look at each of the words in the output and see if it appears in the references.
   - An extreme example:
