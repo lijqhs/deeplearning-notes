@@ -699,12 +699,12 @@ In the example of the French sentence, `"Jane, visite l'Afrique en Septembre"`.
     - Case 1:
       | Human | Algorithm | p(y<sup>*</sup>\|x) vs p(y&#770;\|x) | At fault? |
       | :---: | :-------: | :--------------------------------: | :-------: |
-      | Jane visits Africa in September. | Jane visited Africa last September. | (y<sup>*</sup>\|x) > p(y&#770;\|x) | Beam search |
+      | Jane visits Africa in September. | Jane visited Africa last September. | p(y<sup>*</sup>\|x) > p(y&#770;\|x) | Beam search |
       | ... | ... | ... | ... |
     - Case 2:
       | Human | Algorithm | p(y<sup>*</sup>\|x) vs p(y&#770;\|x) | At fault? |
       | :---: | :-------: | :--------------------------------: | :-------: |
-      | Jane visits Africa in September. | Jane visited Africa last September. | (y<sup>*</sup>\|x) ≤ p(y&#770;\|x) | RNN |
+      | Jane visits Africa in September. | Jane visited Africa last September. | p(y<sup>*</sup>\|x) ≤ p(y&#770;\|x) | RNN |
       | ... | ... | ... | ... |
 
 #### Bleu Score (optional)
