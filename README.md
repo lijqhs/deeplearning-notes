@@ -27,8 +27,8 @@ Introduction from the specialization page:
   - [Week 4: Special applications: Face recognition & Neural style transfer](C4-Convolutional-Neural-Networks/readme.md#week-4-special-applications-face-recognition--neural-style-transfer)
 - [Course 5: Sequence Models](C5-Sequence-Models/readme.md)
   - [Week 1: Recurrent Neural Networks](C5-Sequence-Models/readme.md#week-1-recurrent-neural-networks)
-  - Week 2
-  - Week 3
+  - [Week 2: Natural Language Processing & Word Embeddings](C5-Sequence-Models/readme.md#week-2-natural-language-processing--word-embeddings)
+  - [Week 3: Sequence models & Attention mechanism](C5-Sequence-Models/readme.md#week-3-sequence-models--attention-mechanism)
 
 
 
