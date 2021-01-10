@@ -144,7 +144,7 @@ For language model it will be useful to represent a sentence as output `y` rathe
 - Until the end, it will predict the chance of `<EOS>`.
 - Define the cost function. The overall loss is just the sum over all time steps of the loss associated with the individual predictions.
 
-![language model](img/lm.png)
+![language model](img/rnn-lm.png)
 
 If you train this RNN on a large training set, we can do:
 
@@ -800,6 +800,22 @@ The English translation:
 
   ![visualize-alpha](img/attention-alpha-vis.png)
 
+*Implementation tips*:
+
+* The diagram on the left shows the attention model.
+* The diagram on the right shows what one "attention" step does to calculate the attention variables 𝛼<sup>\<t,t'></sup>.
+* The attention variables 𝛼<sup>\<t,t'></sup> are used to compute the context variable context<sup>\<t></sup> for each timestep in the output (t=1, ..., T<sub>y</sub>).
+
+<table>
+<td> 
+<img src="img/attn_model.png" style="width:500;height:500px;"> <br>
+</td> 
+<td> 
+<img src="img/attn_mechanism.png" style="width:500;height:500px;"> <br>
+</td> 
+</table>
+<caption><center>Neural machine translation with attention</center></caption>
+
 ### Speech recognition - Audio data
 
 #### Speech recognition
@@ -838,7 +854,19 @@ The English translation:
 - With a RNN what we really do, is to take an audio clip, maybe compute spectrogram features, and that generates audio features x<sup>\<1></sup>, x<sup>\<2></sup>, x<sup>\<3></sup>, that you pass through an RNN. So, all that remains to be done, is to define the target labels y.
   - In the training set, you can set the target labels to be zero for everything before that point, and right after that, to set the target label of one. Then, if a little bit later on, the trigger word was said again at this point, then you can again set the target label to be one.
   - Actually it just won't actually work reasonably well. One slight disadvantage of this is, it creates a very imbalanced training set, so we have a lot more zeros than we want.
-  - One other thing you could do, that it's little bit of a hack, but could make the model a little bit easier to train, is instead of setting only a single time step to operate one, you could actually make it to operate a few ones for several times.
+  - One other thing you could do, that it's little bit of a hack, but could make the model a little bit easier to train, is instead of setting only a single time step to operate one, you could actually make it to operate a few ones for several times. *Guide to label the positive/negative words)*:
+    - Assume labels y<sup>\<t></sup> represent whether or not someone has just finished saying "activate."
+      - y<sup>\<t></sup> = 1 when that that clip has finished saying "activate".
+      - Given a background clip, we can initialize y<sup>\<t></sup> = 0 for all `t`, since the clip doesn't contain any "activates."
+    - When you insert or overlay an "activate" clip, you will also update labels for y<sup>\<t></sup>.
+      - Rather than updating the label of a single time step, we will update 50 steps of the output to have target label 1.
+      - Recall from the lecture on trigger word detection that updating several consecutive time steps can make the training data more balanced.
+
+*Implementation tips*:
+
+- Data synthesis is an effective way to create a large training set for speech problems, specifically trigger word detection.
+- Using a spectrogram and optionally a 1D conv layer is a common pre-processing step prior to passing audio data to an RNN, GRU or LSTM.
+- An end-to-end deep learning approach can be used to build a very effective trigger word detection system.
 
 ---
 Notes by Aaron © 2020
